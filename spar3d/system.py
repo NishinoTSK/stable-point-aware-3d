@@ -602,6 +602,7 @@ class SPAR3D(BaseModule):
             .repeat(batch_size, 1, 1, 1),
         }
 
+
         meshes, global_dict = self.generate_mesh(
             batch,
             bake_resolution,
@@ -613,14 +614,27 @@ class SPAR3D(BaseModule):
 
         if return_points:
             point_clouds = []
+            data = np.load("/content/objaverse4Certo.npy")  # substitua pelo caminho do seu arquivo
+            batch_size = data.shape[0]
+
+            point_clouds = []
             for i in range(batch_size):
-                xyz = batch["pc_cond"][i, :, :3].cpu().numpy()
-                color_rgb = (
-                    (batch["pc_cond"][i, :, 3:6] * 255).cpu().numpy().astype(np.uint8)
-                )
+                xyz = data[i, :, :3]
+                color_rgb = (data[i, :, 3:6] * 255).astype(np.uint8)
                 pc_trimesh = trimesh.PointCloud(vertices=xyz, colors=color_rgb)
                 point_clouds.append(pc_trimesh)
+
+            global_dict = {}
             global_dict["point_clouds"] = point_clouds
+            # for i in range(batch_size):
+            #     xyz = batch["pc_cond"][i, :, :3].cpu().numpy()
+            #     color_rgb = (
+            #         (batch["pc_cond"][i, :, 3:6] * 255).cpu().numpy().astype(np.uint8)
+            #     )
+            #     print(batch["pc_cond"].shape)
+            #     pc_trimesh = trimesh.PointCloud(vertices=xyz, colors=color_rgb)
+            #     point_clouds.append(pc_trimesh)
+            # global_dict["point_clouds"] = point_clouds
 
         if batch_size == 1:
             return meshes[0], global_dict
@@ -669,6 +683,9 @@ class SPAR3D(BaseModule):
         device = get_device()
 
         batch_size = batch["rgb_cond"].shape[0]
+
+        data = np.load("/content/objaverse4Certo.npy")  # substitua pelo caminho do seu arquivo
+        pointcloud = data[0]
 
         if pointcloud is not None:
             if isinstance(pointcloud, list):
